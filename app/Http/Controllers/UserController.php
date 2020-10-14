@@ -44,6 +44,8 @@ class UserController extends Controller
 
     public function userhome(Request $request){
 
+        if (session()->has('uname')) {
+
         $username = $request->session()->get('uname');
 
         $userdetails = DB::table('users')->where('email', $username)->get();
@@ -82,7 +84,15 @@ class UserController extends Controller
         // print_r($friends);
      
          return view('userprofile/home')->with('userdetails',$userdetails)->with('Fsuggession',$Fsuggession)->with('friends',$friends);
-    }
+    
+        }else{
+
+            return redirect('/')->withErrors('Login with username and password to continue access');
+
+        }
+    
+    
+        }
 
     public function loginprocess(LoginRequest $request){
 
@@ -119,6 +129,8 @@ class UserController extends Controller
 
     public function sendrequest(Request $request, $id){
 
+        if (session()->has('uname')) {
+
         $username = $request->session()->get('uname');
 
         $user = DB::table('users')->where('email', $username)->get();
@@ -140,10 +152,18 @@ class UserController extends Controller
 
             return redirect('/userhome');
 
+        }else{
+
+            return redirect('/')->withErrors('Login with username and password to continue access');
+
+        }
+
     }
 
 
     public function acceptRequest($sid,$rid){
+
+        if (session()->has('uname')) {
 
         DB::table('friends')
               ->where('reciever', $rid)
@@ -151,6 +171,12 @@ class UserController extends Controller
               ->update(['status' => 1]);
 
               return redirect('/userhome');
+
+            }else{
+
+                return redirect('/')->withErrors('Login with username and password to continue access');
+    
+            }
 
     }
 
@@ -163,6 +189,8 @@ class UserController extends Controller
 
 
     public function changeimage(Request $request){
+
+        if (session()->has('uname')) {
 
         $username = $request->session()->get('uname');
 
@@ -202,9 +230,18 @@ class UserController extends Controller
         // print_r($friends);
      
          return view('userprofile/changeimage')->with('userdetails',$userdetails)->with('Fsuggession',$Fsuggession)->with('friends',$friends);
-    }
+   
+        }else{
+
+            return redirect('/')->withErrors('Login with username and password to continue access');
+
+        }
+   
+        }
 
     public function updateimage(Request $request){
+
+        if (session()->has('uname')) {
 
         $username = $request->session()->get('uname');
         $file     = request()->file('image');
@@ -220,5 +257,90 @@ class UserController extends Controller
             DB::table('sliders')->insert([
                 ['slider' => $request->input('slider'), 'heading' => $request->input('heading'), 'description' => $request->input('description'), 'image' => $destinationPath.$fileName, 'created_at' => now()],
             ]);
+   
+
+        }else{
+
+            return redirect('/')->withErrors('Login with username and password to continue access');
+
+        }
+   
+        }
+
+
+    public function editprofile(Request $request){
+
+        if (session()->has('uname')) {
+
+        $username = $request->session()->get('uname');
+
+        $userdetails = DB::table('users')->where('email', $username)->get();
+        $user = DB::table('users')->where('email', $username)->get();
+        foreach($user as $user){
+
+            $userid=$user->id;
+
+        }
+        $friends = DB::table('users')
+                    ->select('users.id','users.email','users.firstname','users.lastname','users.profilepic','friends.status','friends.reciever')
+                    ->rightJoin('friends', 'users.id', '=', 'friends.sender')
+                    ->where('users.email', '!=', $username)
+                    ->where('friends.status','=',1)
+                    ->where('friends.reciever','=',$userid)
+                    ->orwhere('friends.sender','=',$userid)
+                    ->where('users.email', '!=', $username)
+                    ->where('friends.status','=',1)
+                    
+                    ->get();
+        $Fsuggession = DB::table('users')
+                        ->select('users.id','users.email','users.firstname','users.lastname','users.profilepic','friends.status','friends.reciever')
+                        ->rightJoin('friends', 'users.id', '=', 'friends.sender')
+                        ->where('users.email', '!=', $username)
+                        ->where('friends.status','=',0)
+                        ->get();
+
+
+        $Frequest = DB::table('users')
+                    ->select('users.id','users.email','users.firstname','users.lastname','users.profilepic','friends.status')
+                    ->rightJoin('friends', 'users.id', '=', 'friends.reciever')
+                    ->where('friends.status','=',0)
+                    ->where('friends.reciever','=',$userid)
+                    ->get();
+
+        // print_r($friends);
+     
+         return view('userprofile/editprofile')->with('userdetails',$userdetails)->with('Fsuggession',$Fsuggession)->with('friends',$friends);
+
+        }else{
+
+            return redirect('/')->withErrors('Login with username and password to continue access');
+
+        }
+    }
+
+    public function updateprofile(Request $request){
+
+        if (session()->has('uname')) {
+
+        DB::table('users')
+              ->where('email', $request->input('email'))
+              ->update(
+                [
+                    'firstname' => $request->input('firstname'),
+                    'lastname' => $request->input('lastname'),
+                    'email' => $request->input('email'),
+                    'gender' => $request->input('gender'),
+                    'updated_at' => now(),
+                ]
+              );
+
+              return redirect('/userhome');
+
+            }else{
+
+                return redirect('/')->withErrors('Login with username and password to continue access');
+    
+            }
+        
     }
 }

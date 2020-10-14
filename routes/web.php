@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('login');
 });
-// Route::get('/changeimage', function () {
-//     return view('userprofile/changeimage');
+// Route::get('/editprofile', function () {
+//     return view('userprofile/editprofile');
 // });
 
 Route::get('/registration','UserController@registration');
@@ -28,3 +28,4 @@ Route::get('/sendrequest/{id}','UserController@sendrequest');
 Route::get('/acceptRequest/{sid}/{rid}','UserController@acceptRequest');
 Route::get('/changeimage','UserController@changeimage');
 Route::post('/updateimage','UserController@updateimage');
+Route::get('/editprofile','UserController@editprofile');
